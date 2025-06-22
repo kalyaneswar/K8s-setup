@@ -120,3 +120,66 @@ helm uninstall aws-efs-csi-driver --namespace kube-system
 ```sh
 kubectl get pods -n kube-system 
 ```
+
+
+## 5. EKS ingress Controller setup
+
+[AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/)
+
+1. Create an IAM OIDC provider. You can skip this step if you already have one for your cluster.
+
+```sh
+eksctl utils associate-iam-oidc-provider \
+    --region <region-code> \
+    --cluster <your-cluster-name> \
+    --approve
+```
+
+2. Download an IAM policy for the LBC using one of the following commands:
+```sh
+curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.13.3/docs/install/iam_policy.json
+```
+
+3. Create an IAM policy named AWSLoadBalancerControllerIAMPolicy. If you downloaded a different policy, replace iam-policy with the name of the policy that you downloaded.
+
+```sh
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam-policy.json
+```
+
+4. Create an IAM role and Kubernetes ServiceAccount for the LBC. Use the ARN from the previous step.
+
+```sh
+eksctl create iamserviceaccount \
+--cluster=<cluster-name> \
+--namespace=kube-system \
+--name=aws-load-balancer-controller \
+--attach-policy-arn=arn:aws:iam::<AWS_ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+--override-existing-serviceaccounts \
+--region <region-code> \
+--approve
+```
+
+5 . Add the EKS chart repo to Helm
+
+```sh
+helm repo add eks https://aws.github.io/eks-charts
+```
+
+6.Helm install command for clusters with IRSA:
+
+```sh
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=<cluster-name> --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+```
+
+7. we need to provide annotations (to give power to annotations to create ALB) in ingress service section
+```
+ annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+		kubernetes.io/ingress.class: alb ( depressiated --> so use --> spec.ingressClassName: alb)
+        alb.ingress.kubernetes.io/target-type: ip
+		alb.ingress.kubernetes.io/group.name: kalyaneswar
+        alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
+```		
+	
