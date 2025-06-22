@@ -110,3 +110,8 @@ helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-dr
 ```sh 
 helm uninstall aws-efs-csi-driver --namespace kube-system
 ```
+
+* To check CSI Drivers
+```sh
+kubectl get pods -n kube-system 
+```
