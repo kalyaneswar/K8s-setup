@@ -69,4 +69,21 @@ eksctl create cluster --config-file=eks.yml
 eksctl delete cluster --config-file=eks.yml
 ```
 
-## 5. Install CSI Drivers to 
+## 5. Install CSI Drivers to communicate with EBS/EFS volumes
+
+1. Create EBS CSI Drivers
+* Add the aws-ebs-csi-driver Helm repository.
+```sh
+helm repo add aws-ebs-csi-driver https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+helm repo update
+```
+* Install the latest release of the driver.
+```sh
+helm upgrade --install aws-ebs-csi-driver \
+    --namespace kube-system \
+    aws-ebs-csi-driver/aws-ebs-csi-driver
+```
+* Uninstall CSI Drivers
+```sh
+helm uninstall aws-ebs-csi-driver --namespace kube-system
+```
