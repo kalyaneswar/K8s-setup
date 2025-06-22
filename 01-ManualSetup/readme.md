@@ -87,3 +87,26 @@ helm upgrade --install aws-ebs-csi-driver \
 ```sh
 helm uninstall aws-ebs-csi-driver --namespace kube-system
 ```
+
+
+2. Create EFS CSI Drivers
+
+* Add the Helm repo.
+```sh
+helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+```
+
+* Update the repo.
+```sh
+helm repo update aws-efs-csi-driver
+```
+
+* Install a release of the driver using the Helm chart.
+```sh
+helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-driver/aws-efs-csi-driver
+```
+
+* Uninstall EFS CSI Drivers
+```sh 
+helm uninstall aws-efs-csi-driver --namespace kube-system
+```
