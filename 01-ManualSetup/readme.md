@@ -1,5 +1,5 @@
 
-## 1.Create a workstation
+## 1. Create a workstation
 
  * This workstation is used to connect the cluster for deployemnts and etc..
  * Using terraform creating the ec2 instance(workstation)
@@ -14,7 +14,7 @@
     ```
  * once ec2 is launched connect with ec2 instace which is our workstation
 
-## 2.Configure AWS with ec2(workstation)
+## 2. Configure AWS with ec2(workstation)
 
 * There are 2 ways we can configure ec2 to communicate and create AWS services/resources
     1. Attach the IAM Role to create EKS cluster or
@@ -30,7 +30,7 @@
 
         ```
 
-## 3.Workstation setup
+## 3. Workstation setup
 
 * Now we need to setup workstation by installing packages and others to communicate with EKS cluster
 1. Install Docker
@@ -50,6 +50,9 @@ sh kubectl-install.sh
 sh helm-install.sh
 ```
 5. Install Kubens (to change our own ns as default)
+* kubens is a tool to switch between Kubernetes namespaces (and configure them for kubectl) easily.
+[text](https://github.com/ahmetb/kubectx?tab=readme-ov-file#manual-installation-macos-and-linux)
+
 ```sh
 sudo sh kubens-install.sh
 ```
@@ -64,3 +67,5 @@ eksctl create cluster --config-file=eks.yml
 ```sh
 eksctl delete cluster --config-file=eks.yml
 ```
+
+## 5. Install CSI Drivers to 
