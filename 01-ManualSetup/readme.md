@@ -45,3 +45,22 @@ sh eksctl-install.sh
 ```sh
 sh kubectl-install.sh
 ```
+4. Install Helm
+```sh
+sh helm-install.sh
+```
+5. Install Kubens (to change our own ns as default)
+```sh
+sh kubens-install.sh
+```
+
+## 4. Create EKS cluster Now
+
+1. to create EKS cluster
+```sh
+eksctl create cluster --config-file=eks.yml
+```
+2. To destroy/delete EKS cluster
+```sh
+eksctl delete cluster --config-file=eks.yml
+```
