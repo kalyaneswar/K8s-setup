@@ -174,7 +174,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n ku
 ```
 
 7. we need to provide annotations (to give power to annotations to create ALB) in ingress service section
-```
+```sh
  annotations:
         alb.ingress.kubernetes.io/scheme: internet-facing
 		kubernetes.io/ingress.class: alb ( depressiated --> so use --> spec.ingressClassName: alb)
