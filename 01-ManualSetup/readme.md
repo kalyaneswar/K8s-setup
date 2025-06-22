@@ -51,7 +51,8 @@ sh helm-install.sh
 ```
 5. Install Kubens (to change our own ns as default)
 * kubens is a tool to switch between Kubernetes namespaces (and configure them for kubectl) easily.
-[text](https://github.com/ahmetb/kubectx?tab=readme-ov-file#manual-installation-macos-and-linux)
+
+[Kubens-install guide/souce link](https://github.com/ahmetb/kubectx?tab=readme-ov-file#manual-installation-macos-and-linux)
 
 ```sh
 sudo sh kubens-install.sh
