@@ -35,7 +35,7 @@
 * Now we need to setup workstation by installing packages and others to communicate with EKS cluster
 1. Install Docker
 ```sh
-sh install-docker.sh
+sudo sh install-docker.sh
 ```
 2. Install eksctl 
 ```sh
@@ -51,7 +51,7 @@ sh helm-install.sh
 ```
 5. Install Kubens (to change our own ns as default)
 ```sh
-sh kubens-install.sh
+sudo sh kubens-install.sh
 ```
 
 ## 4. Create EKS cluster Now
