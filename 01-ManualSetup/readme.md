@@ -183,3 +183,43 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n ku
         alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
 ```		
 	
+#### aws-load-balancer-controller:
+
+aws-load-balancer-controller-* The aws-load-balancer-controller pods in your EKS cluster are responsible for provisioning and managing AWS Elastic Load Balancers (ELBs) — specifically:
+
+
+```sh
+kubectl get pods -n kube-system
+```
+
+### 🚀 What It Does
+The AWS Load Balancer Controller automates the creation and management of the following AWS resources:
+
+* Application Load Balancer (ALB)
+
+* Network Load Balancer (NLB)
+
+### 💡 Main Functions
+1. Manages Ingress Resources
+It watches Kubernetes Ingress objects that are annotated to use class alb.
+
+Then it provisions an Application Load Balancer (ALB) with necessary target groups and listener rules.
+
+2. Manages Service of Type LoadBalancer
+If you define a Service with type: LoadBalancer, and annotate it to use nlb, it provisions an NLB.
+
+3. Dynamic Reconciliation
+Continuously monitors changes to:
+
+    Pods
+    Services
+    Ingress objects
+
+Updates ALBs/NLBs accordingly (e.g., if a pod IP changes, it updates the ALB target group).
+
+### 🔎 Why You Need It
+#### Without this controller:
+
+* You’d have to manually configure ALBs/NLBs in the AWS Console.
+* You’d lose integration between Kubernetes Ingress/Service and AWS load balancing.
+
