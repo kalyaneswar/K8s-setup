@@ -211,9 +211,9 @@ If you define a Service with type: LoadBalancer, and annotate it to use nlb, it 
 3. Dynamic Reconciliation
 Continuously monitors changes to:
 
-    Pods
-    Services
-    Ingress objects
+* Pods
+* Services
+* Ingress objects
 
 Updates ALBs/NLBs accordingly (e.g., if a pod IP changes, it updates the ALB target group).
 
