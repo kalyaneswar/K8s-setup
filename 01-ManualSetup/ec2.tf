@@ -9,3 +9,7 @@ resource "aws_instance" "workstation" {
     envionment = "test"
   }
 }
+
+output "public_ip_for_workstation" {
+  value = aws_instance.workstation.public_ip
+}
