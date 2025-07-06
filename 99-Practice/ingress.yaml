@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: app1
-        image: kalyaneswarm/frontend:v1.0
+        image: joindevops/app1:1.0
 ---
 apiVersion: v1
 kind: Service
@@ -43,11 +43,11 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
-    alb.ingress.kubernetes.io/group.name: kalyangroup
+    alb.ingress.kubernetes.io/group.name: joindevops
 spec:
   ingressClassName: alb
   rules:
-  - host: "app1.kalyaneswar.site" # ALB Rule
+  - host: "app1.kalyaneswar.online" # ALB Rule
     http:
       paths:
       - pathType: Prefix
