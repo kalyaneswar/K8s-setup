@@ -47,7 +47,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-  - host: "app2.kalyaneswar.online" # ALB Rule
+  - host: "app2.kalyaneswar.site" # ALB Rule
     http:
       paths:
       - pathType: Prefix
