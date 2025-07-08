@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend                    # Name of the deployment
+  namespace: expense              # Namespace where it will be deployed
+  labels:
+    component: backend            # Application component (used for grouping)
+    project: expense              # Project name
+    Environment: {{ .Values.labels.Environment }}  # Environment like dev/staging/prod from values.yaml
+spec:
+  replicas: {{ .Values.deployment.replicas }}  # Number of backend pods to run
+  selector:
+    matchLabels:
+      component: backend
+      project: expense
+      Environment: {{ .Values.labels.Environment }}  # This must exactly match the pod labels
+  template:
+    metadata:
+      labels:
+        component: backend
+        project: expense
+        Environment: {{ .Values.labels.Environment }}  # Labels applied to the pods created
+    spec:
+      containers:
+      - name: backend
+        image: kalyaneswarm/backend:{{ .Values.deployment.imageVersion }}  # Image tag/version from values.yaml
+        imagePullPolicy: Always  # Always pull latest image (usually for dev/test)
+        ports:
+        - containerPort: 8080    # Exposes port 8080 from the container
+        envFrom:
+        - configMapRef:
+            name: backend        # Pull environment variables from a ConfigMap named "backend"
+        resources:
+          requests:
+            memory: {{ .Values.Spec.resources.requests.memory }}  # Minimum memory required
+            cpu: {{ .Values.Spec.resources.requests.cpu }}        # Minimum CPU required
+          limits:
+            memory: {{ .Values.Spec.resources.limits.memory }}    # Maximum memory allowed
+            cpu: {{ .Values.Spec.resources.limits.cpu }}          # Maximum CPU allowed
+        livenessProbe:
+          httpGet:
+            path: /health        # Checks container health at /health
+            port: 8080
+          initialDelaySeconds: 30  # Start checking after 30 seconds
+          periodSeconds: 10        # Check every 10 seconds
+        readinessProbe:
+          httpGet:
+            path: /health        # Determines if the app is ready to receive traffic
+            port: 8080
+          initialDelaySeconds: 10  # Start checking after 10 seconds
+          periodSeconds: 5         # Check every 5 seconds

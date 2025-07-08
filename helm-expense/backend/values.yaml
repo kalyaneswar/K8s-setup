@@ -1,0 +1,18 @@
+deployment:
+  replicas: 3
+  imageVersion: v1.0
+
+labels:
+  Environment: development
+
+Spec:
+  resources:
+    requests:
+      memory: "256Mi"      # Minimum memory the container needs to run
+      cpu: "250m"          # Minimum CPU the container needs to run
+    limits:
+      memory: "512Mi"      # Max memory it can use
+      cpu: "500m"  
+
+DB_HOST:
+  service: mysql
