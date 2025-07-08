@@ -16,3 +16,8 @@ Spec:
 
 DB_HOST:
   service: mysql
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 5
+  averageUtilization: 75
