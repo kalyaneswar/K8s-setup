@@ -1,61 +1,71 @@
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: apps/v1              # Using the apps/v1 API version for StatefulSet
+kind: StatefulSet                # We're creating a StatefulSet (used for stateful applications like databases)
 metadata:
-  name: mysql
-  labels:
+  name: mysql                    # Name of the StatefulSet is "mysql"
+  namespace: expense
+  labels:                        # Labels to identify and filter the workload
     project: expense
     component: mysql
     Environment: development
+
 spec:
-  serviceName: mysql
-  replicas: 3
+  serviceName: mysql             # Headless service name used for stable network identity
+  replicas: 3                    # Number of MySQL pods to run (3 replicas)
   selector:
-    matchLabels:
+    matchLabels:                 # Selector to match pods with these labels
       project: expense
       component: mysql
       Environment: development
-  template:
+
+  template:                      # Pod template for MySQL
     metadata:
-      labels:
+      labels:                    # Same labels used for matching pods to StatefulSet
         project: expense
         component: mysql
         Environment: development
     spec:
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 3000
-        fsGroup: 2000
+      securityContext:           # Apply security context at pod level
+        runAsUser: 1000          # Run processes inside the pod as user ID 1000
+        runAsGroup: 3000         # Primary group ID for the container process
+        fsGroup: 2000            # Group ID that owns mounted volumes (helps with permission issues)
+
       containers:
-      - name: mysql
-        image: kalyaneswarm/mysql:v1.0
+      - name: mysql              # Container name
+        image: kalyaneswarm/mysql:v1.0   # MySQL Docker image to use
+
         ports:
-        - containerPort: 3306
-        resources:
+        - containerPort: 3306    # Expose MySQL's default port
+
+        resources:               # Define resource requests and limits
           requests:
-            memory: "256Mi"
-            cpu: "250m"
+            memory: "256Mi"      # Minimum memory the container needs to run
+            cpu: "250m"          # Minimum CPU the container needs to run
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "512Mi"      # Max memory it can use
+            cpu: "500m"          # Max CPU it can use
+
         volumeMounts:
-        - name: mysql-storage
-          mountPath: /var/lib/mysql
-        livenessProbe:
+        - name: mysql-storage    # Mount the persistent volume
+          mountPath: /var/lib/mysql  # MySQL data directory
+
+        livenessProbe:           # Check if MySQL is alive (if not, restart the pod)
+          tcpSocket:
+            port: 3306           # Probe MySQL on port 3306
+          initialDelaySeconds: 30   # Wait 30s after start before first check
+          periodSeconds: 10         # Check every 10s
+
+        readinessProbe:          # Check if MySQL is ready to serve traffic
           tcpSocket:
             port: 3306
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          tcpSocket:
-            port: 3306
-          initialDelaySeconds: 10
-          periodSeconds: 5
-  volumeClaimTemplates:
+          initialDelaySeconds: 10   # Wait 10s after start before first check
+          periodSeconds: 5          # Check every 5s
+
+  volumeClaimTemplates:          # Template for persistent storage claim per pod
   - metadata:
-      name: mysql-storage
+      name: mysql-storage        # Name of the volume claim
     spec:
-      accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "expense-ebs"
+      accessModes: [ "ReadWriteOnce" ] # Volume can be mounted as read-write by a single node
+      storageClassName: "expense-ebs"  # Use EBS-based storage class (must exist in your cluster)
       resources:
         requests:
-          storage: 1Gi
+          storage: 1Gi           # Each pod will get 1Gi of persistent storage

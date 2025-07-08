@@ -1,11 +1,16 @@
-apiVersion: v1
-kind: Service
+apiVersion: v1                  # API version for creating a Service
+kind: Service                   # Defining a Service object
 metadata:
-  name: mysql
+  name: mysql                   # Name of the service (used by StatefulSet)
+  namespace: expense            # Namespace in which this service exists
+
 spec:
-  clusterIP: None
-  selector:
+  clusterIP: None               # Headless Service: no cluster IP, used for StatefulSets to give stable DNS
+  selector:                     # Selects the pods that match these labels
     component: mysql
+    project: expense
+    Environment: development
+
   ports:
-    - port: 3306
-      targetPort: 3306
+    - port: 3306                # Port exposed by the service (clients use this)
+      targetPort: 3306          # Port on the container (MySQL default port)
