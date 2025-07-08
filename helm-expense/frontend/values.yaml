@@ -19,3 +19,6 @@ hpa:
   minReplicas: 1
   maxReplicas: 5
   averageUtilization: 75
+
+configmap:
+  port: 8080
