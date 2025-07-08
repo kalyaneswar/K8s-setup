@@ -65,14 +65,14 @@ spec:
 
         livenessProbe:                     # Checks if the app is healthy
           httpGet:
-            path: /health                  # Endpoint used for health check
+            path: /                  # Endpoint used for health check
             port: 8080
           initialDelaySeconds: 30          # Wait 30s after startup before checking
           periodSeconds: 10                # Check every 10s
 
         readinessProbe:                    # Checks if the app is ready to serve traffic
           httpGet:
-            path: /health
+            path: /
             port: 8080
           initialDelaySeconds: 10          # Start checking readiness after 10s
           periodSeconds: 5                 # Check every 5s
