@@ -6,23 +6,23 @@ metadata:
   labels:                        # Labels to identify and filter the workload
     project: expense
     component: mysql
-    Environment: development
+    Environment: {{ .Values.labels.Environment }}
 
 spec:
   serviceName: mysql             # Headless service name used for stable network identity
-  replicas: 3                    # Number of MySQL pods to run (3 replicas)
+  replicas: {{ .Values.StatefulSet.replicas }}                    # Number of MySQL pods to run (3 replicas)
   selector:
     matchLabels:                 # Selector to match pods with these labels
       project: expense
       component: mysql
-      Environment: development
+      Environment: {{ .Values.labels.Environment }}
 
   template:                      # Pod template for MySQL
     metadata:
       labels:                    # Same labels used for matching pods to StatefulSet
         project: expense
         component: mysql
-        Environment: development
+        Environment: {{ .Values.labels.Environment }}
     spec:
       securityContext:           # Apply security context at pod level
         runAsUser: 1000          # Run processes inside the pod as user ID 1000
@@ -31,18 +31,18 @@ spec:
 
       containers:
       - name: mysql              # Container name
-        image: kalyaneswarm/mysql:v1.0   # MySQL Docker image to use
+        image: kalyaneswarm/mysql:{{ .Values.Spec.imageVersion }}  # MySQL Docker image to use
 
         ports:
         - containerPort: 3306    # Expose MySQL's default port
 
         resources:               # Define resource requests and limits
           requests:
-            memory: "256Mi"      # Minimum memory the container needs to run
-            cpu: "250m"          # Minimum CPU the container needs to run
+            memory: {{ .Values.Spec.resources.requests.memory }}      # Minimum memory the container needs to run
+            cpu: {{ .Values.Spec.resources.requests.cpu }}          # Minimum CPU the container needs to run
           limits:
-            memory: "512Mi"      # Max memory it can use
-            cpu: "500m"          # Max CPU it can use
+            memory: {{ .Values.Spec.resources.limits.memory }}     # Max memory it can use
+            cpu: {{ .Values.Spec.resources.limits.cpu }}         # Max CPU it can use
 
         volumeMounts:
         - name: mysql-storage    # Mount the persistent volume
