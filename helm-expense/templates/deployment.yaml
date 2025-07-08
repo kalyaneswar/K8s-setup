@@ -1,8 +1,5 @@
-
----
-# MySQL Deployment
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mysql
   labels:
@@ -10,6 +7,7 @@ metadata:
     component: mysql
     Environment: development
 spec:
+  serviceName: mysql
   replicas: 3
   selector:
     matchLabels:
@@ -26,6 +24,8 @@ spec:
       containers:
       - name: mysql
         image: kalyaneswarm/mysql:v1.0
+        ports:
+        - containerPort: 3306
         resources:
           requests:
             memory: "256Mi"
@@ -46,9 +46,12 @@ spec:
             port: 3306
           initialDelaySeconds: 10
           periodSeconds: 5
-      volumes:
-      - name: mysql-storage
-        persistentVolumeClaim:
-          claimName: mysql-pvc
----
-
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "expense-ebs"
+      resources:
+        requests:
+          storage: 1Gi
