@@ -1,3 +1,6 @@
+
+---
+# MySQL Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,8 +26,6 @@ spec:
       containers:
       - name: mysql
         image: kalyaneswarm/mysql:v1.0
-        ports:
-        - containerPort: 3306
         resources:
           requests:
             memory: "256Mi"
@@ -32,4 +33,22 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+---
 
