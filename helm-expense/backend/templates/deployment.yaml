@@ -1,51 +1,72 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend                    # Name of the deployment
-  namespace: expense              # Namespace where it will be deployed
+  name: backend                            # Name of the Deployment resource
+  namespace: expense                       # Namespace where the backend will run
   labels:
-    component: backend            # Application component (used for grouping)
-    project: expense              # Project name
-    Environment: {{ .Values.labels.Environment }}  # Environment like dev/staging/prod from values.yaml
+    component: backend                     # App component (used for grouping resources)
+    project: expense                       # Project name
+    Environment: {{ .Values.labels.Environment }}  # Environment (e.g., dev, staging, prod) - taken from values.yaml
+  annotations:
+    prometheus.io/scrape: "true"           # Tells Prometheus to scrape metrics
+    prometheus.io/port: "8080"             # Port from which Prometheus should scrape
 spec:
-  replicas: {{ .Values.deployment.replicas }}  # Number of backend pods to run
+  replicas: {{ .Values.deployment.replicas }}  # Number of replicas/pods to run - from values.yaml
   selector:
     matchLabels:
-      component: backend
+      component: backend                   # These labels must match with the pod template
       project: expense
-      Environment: {{ .Values.labels.Environment }}  # This must exactly match the pod labels
+      Environment: {{ .Values.labels.Environment }}
   template:
     metadata:
       labels:
-        component: backend
+        component: backend                 # Labels attached to each pod
         project: expense
-        Environment: {{ .Values.labels.Environment }}  # Labels applied to the pods created
+        Environment: {{ .Values.labels.Environment }}
     spec:
+      terminationGracePeriodSeconds: 30    # Time to wait before force killing a pod (on delete)
+      restartPolicy: Always                # Pods will always restart on failure
+
+      affinity:                            # Pod scheduling rules
+        podAntiAffinity:                   # Try to avoid placing pods with same label on same node
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100                    # Weight/priority of this rule
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: backend       # Match pods with same "component=backend"
+              topologyKey: "kubernetes.io/hostname"  # Spread across different nodes (hosts)
+
       containers:
-      - name: backend
-        image: kalyaneswarm/backend:{{ .Values.deployment.imageVersion }}  # Image tag/version from values.yaml
-        imagePullPolicy: Always  # Always pull latest image (usually for dev/test)
+      - name: backend                      # Name of the container
+        image: kalyaneswarm/backend:{{ .Values.deployment.imageVersion }}  # Container image with version from values.yaml
+        imagePullPolicy: Always            # Always pull the latest image (recommended in dev)
+
         ports:
-        - containerPort: 8080    # Exposes port 8080 from the container
+        - containerPort: 8080              # Container listens on port 8080
+
         envFrom:
         - configMapRef:
-            name: backend        # Pull environment variables from a ConfigMap named "backend"
+            name: backend                  # Load environment variables from ConfigMap named "backend"
+
         resources:
           requests:
-            memory: {{ .Values.Spec.resources.requests.memory }}  # Minimum memory required
-            cpu: {{ .Values.Spec.resources.requests.cpu }}        # Minimum CPU required
+            memory: {{ .Values.Spec.resources.requests.memory }}  # Guaranteed minimum memory for container
+            cpu: {{ .Values.Spec.resources.requests.cpu }}        # Guaranteed minimum CPU
           limits:
-            memory: {{ .Values.Spec.resources.limits.memory }}    # Maximum memory allowed
-            cpu: {{ .Values.Spec.resources.limits.cpu }}          # Maximum CPU allowed
-        livenessProbe:
+            memory: {{ .Values.Spec.resources.limits.memory }}    # Max memory container can use
+            cpu: {{ .Values.Spec.resources.limits.cpu }}          # Max CPU container can use
+
+        livenessProbe:                     # Used by kubelet to check if the container is healthy
           httpGet:
-            path: /health        # Checks container health at /health
+            path: /health                  # API endpoint used to check health
             port: 8080
-          initialDelaySeconds: 30  # Start checking after 30 seconds
-          periodSeconds: 10        # Check every 10 seconds
-        readinessProbe:
+          initialDelaySeconds: 30          # Start probing after 30 seconds
+          periodSeconds: 10                # Check every 10 seconds
+
+        readinessProbe:                    # Used to check if the app is ready to serve traffic
           httpGet:
-            path: /health        # Determines if the app is ready to receive traffic
+            path: /health
             port: 8080
-          initialDelaySeconds: 10  # Start checking after 10 seconds
-          periodSeconds: 5         # Check every 5 seconds
+          initialDelaySeconds: 10          # Start checking after 10 seconds
+          periodSeconds: 5                 # Check every 5 seconds
