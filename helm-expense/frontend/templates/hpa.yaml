@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa                # Name of the HPA
+  namespace: expense              # Namespace where HPA is applied
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1           # Target API version of the frontend deployment
+    kind: Deployment              # Kind of object to scale (Deployment in this case)
+    name: frontend                 # Name of the Deployment to auto-scale
+  minReplicas: {{ .Values.hpa.minReplicas }}         # Minimum number of pods
+  maxReplicas: {{ .Values.hpa.maxReplicas }}         # Maximum number of pods
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu                   # Metric to monitor (CPU in this case)
+      target:
+        type: Utilization         # Target is based on average CPU utilization
+        averageUtilization: {{ .Values.hpa.averageUtilization }}   # % CPU usage threshold to trigger scaling

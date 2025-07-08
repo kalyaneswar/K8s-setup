@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend                            # The name of the Deployment resource
+  namespace: expense                        # Kubernetes namespace for isolation
+  labels:
+    component: frontend                     # Label to identify this as the frontend component
+    project: expense                        # Label to indicate which project this belongs to
+    Environment: {{ .Values.labels.Environment }}  # Dynamic label for environment (dev/staging/prod) from Helm values
+  annotations:
+    prometheus.io/scrape: "true"            # Enable Prometheus to scrape metrics from this pod
+    prometheus.io/port: "8080"              # Prometheus should use port 8080 for scraping
+
+spec:
+  replicas: {{ .Values.deployment.replicas }}  # Number of pod replicas (from Helm values)
+
+  selector:
+    matchLabels:
+      component: frontend                   # These labels must match with pod template labels
+      project: expense
+      Environment: {{ .Values.labels.Environment }}
+
+  template:
+    metadata:
+      labels:
+        component: frontend                 # Labels assigned to pods created by this deployment
+        project: expense
+        Environment: {{ .Values.labels.Environment }}
+
+    spec:
+      terminationGracePeriodSeconds: 30     # Time to allow graceful shutdown before killing pods
+      restartPolicy: Always                 # Always restart containers on failure
+
+      affinity:                             # Rules to influence pod placement
+        podAntiAffinity:                    # Avoid placing frontend pods on the same node
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100                     # Priority weight for this rule
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  component: frontend       # Look for other frontend pods
+              topologyKey: "kubernetes.io/hostname"  # Spread across different nodes (by hostname)
+
+      containers:
+      - name: frontend
+        image: kalyaneswarm/frontend:{{ .Values.deployment.imageVersion }}  # Image with dynamic tag from values.yaml
+        imagePullPolicy: Always            # Always pull latest image (good for dev/testing)
+
+        ports:
+        - containerPort: 8080              # Port exposed by the container
+
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/nginx.conf # Mount the nginx.conf file at this exact path
+          subPath: nginx.conf              # Only the nginx.conf file from ConfigMap is mounted
+          readOnly: true                   # Mount as read-only to prevent changes inside container
+
+        resources:                         # Resource requests and limits
+          requests:
+            memory: {{ .Values.Spec.resources.requests.memory }}  # Minimum memory guaranteed
+            cpu: {{ .Values.Spec.resources.requests.cpu }}        # Minimum CPU guaranteed
+          limits:
+            memory: {{ .Values.Spec.resources.limits.memory }}    # Maximum memory allowed
+            cpu: {{ .Values.Spec.resources.limits.cpu }}          # Maximum CPU allowed
+
+        livenessProbe:                     # Checks if the app is healthy
+          httpGet:
+            path: /health                  # Endpoint used for health check
+            port: 8080
+          initialDelaySeconds: 30          # Wait 30s after startup before checking
+          periodSeconds: 10                # Check every 10s
+
+        readinessProbe:                    # Checks if the app is ready to serve traffic
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10          # Start checking readiness after 10s
+          periodSeconds: 5                 # Check every 5s
+
+      volumes:
+      - name: nginx-conf
+        configMap:
+          name: frontend                   # Reference the ConfigMap named "frontend"
+          items:
+          - key: nginx.conf                # Use the nginx.conf key from the ConfigMap
+            path: nginx.conf               # Mount it as nginx.conf in the container
